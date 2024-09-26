@@ -8,10 +8,10 @@ import model.TaskStatus;
 import java.util.*;
 
 public class TaskManager {
-    private final Map<Integer, Task> taskStorage;
-    private final Map<Integer, Subtask> subtaskStorage;
-    private final Map<Integer, Epic> epicStorage;
-    private int nextId = 1;
+    private final Map<Long, Task> taskStorage;
+    private final Map<Long, Subtask> subtaskStorage;
+    private final Map<Long, Epic> epicStorage;
+    private long nextId = 1L;
 
     public TaskManager() {
         taskStorage = new HashMap<>();
@@ -40,24 +40,31 @@ public class TaskManager {
     }
 
     public void deleteAllSubtask() {
+        Collection<Subtask> values = subtaskStorage.values();
+        for (Subtask subtask : values) {
+            Epic epic = epicStorage.get(subtask.getEpicId());
+            epic.setStatus(TaskStatus.NEW);
+            epic.getSubtasks().clear();
+        }
         subtaskStorage.clear();
     }
 
     public void deleteAllEpic() {
+        subtaskStorage.clear();
         epicStorage.clear();
     }
 
     //Получение задачи по идентификатору
     //###################################################################
-    public Task getTaskById(int taskId) {
+    public Task getTaskById(Long taskId) {
         return taskStorage.get(taskId);
     }
 
-    public Subtask getSubtaskById(int subtaskId) {
+    public Subtask getSubtaskById(Long subtaskId) {
         return subtaskStorage.get(subtaskId);
     }
 
-    public Epic getEpicById(int epicId) {
+    public Epic getEpicById(Long epicId) {
         return epicStorage.get(epicId);
     }
 
@@ -100,21 +107,22 @@ public class TaskManager {
     //Удаление задачи по идентификатору
     //###################################################################
 
-    public void deleteTaskById(int taskId) {
+    public void deleteTaskById(Long taskId) {
         taskStorage.remove(taskId);
     }
 
-    public void deleteSubtaskById(int subtaskId) {
+    public void deleteSubtaskById(Long subtaskId) {
         Subtask subtask = subtaskStorage.get(subtaskId);
         Epic epic = epicStorage.get(subtask.getEpicId());
         epic.getSubtasks().remove(subtask.getId());
+        updateEpicStatus(epic);
         subtaskStorage.remove(subtaskId);
     }
 
-    public void deleteEpicById(int epicId) {
+    public void deleteEpicById(Long epicId) {
         Epic epic = epicStorage.get(epicId);
-        List<Integer> subtasksIds = epic.getSubtasks();
-        for (Integer subtaskId : subtasksIds) {
+        List<Long> subtasksIds = epic.getSubtasks();
+        for (Long subtaskId : subtasksIds) {
             subtaskStorage.remove(subtaskId);
         }
     }
@@ -122,12 +130,12 @@ public class TaskManager {
     //Получение элементов конкретной коллекции
     //###################################################################
 
-    public List<Subtask> getSubtasksByEpicId(int epicId) {
+    public List<Subtask> getSubtasksByEpicId(Long epicId) {
         Epic epic = epicStorage.get(epicId);
-        List<Integer> subtasksIds = epic.getSubtasks();
+        List<Long> subtasksIds = epic.getSubtasks();
         List<Subtask> subtasks = new ArrayList<>();
 
-        for (Integer subtasksId : subtasksIds) {
+        for (Long subtasksId : subtasksIds) {
             subtasks.add(subtaskStorage.get(subtasksId));
         }
 
@@ -140,7 +148,7 @@ public class TaskManager {
         int countDone = 0;
         int countInProgress = 0;
 
-        for (Integer subtaskId : epic.getSubtasks()) {
+        for (Long subtaskId : epic.getSubtasks()) {
             Subtask subtask = subtaskStorage.get(subtaskId);
             switch (subtask.getStatus()) {
                 case NEW:

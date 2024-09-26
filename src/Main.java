@@ -28,7 +28,6 @@ public class Main {
         taskManager.createSubtask(subtask2);
         epic1.getSubtasks().add(subtask1.getId());
         epic1.getSubtasks().add(subtask2.getId());
-        //taskManager.updateEpic(epic1);
 
         Epic epic2 = new Epic("Написать план на день", "Все должно идти по плану", TaskStatus.NEW);
         taskManager.createEpic(epic2);
@@ -53,6 +52,53 @@ public class Main {
 
         //Проверка получения списка подзадач по epicId
         checkGetEpicSubtaskListById(taskManager.getSubtasksByEpicId(epic1.getId()));
+
+        //Проверяем удаление
+        //checkDeleteAllSubtask(taskManager);
+        //checkDeleteAllEpic(taskManager);
+
+        subtask2.setStatus(TaskStatus.NEW);
+        checkDeleteSubtaskById(taskManager, subtask1);
+
+    }
+
+    private static void checkDeleteSubtaskById(TaskManager taskManager, Subtask subtask) {
+        System.out.println("#### Проверяем удаление подзадачи по id ####");
+        System.out.println("Выводим эпик до удаления подзадачи");
+        Long epicId = subtask.getEpicId();
+        System.out.println(taskManager.getEpicById(epicId));
+        taskManager.deleteSubtaskById(subtask.getId());
+        System.out.println("Выводим эпик после удаления, статус эпика NEW");
+        System.out.println(taskManager.getEpicById(epicId));
+        System.out.println("##############################################################");
+    }
+
+    private static void checkDeleteAllSubtask(TaskManager taskManager){
+        System.out.println("#### Проверяем удаление всех подзадач ####");
+        System.out.println("Выводим все эпики до удаления");
+        System.out.println(taskManager.getAllEpic());
+        System.out.println("Выводим все подзадачи");
+        System.out.println(taskManager.getAllSubtask());
+        taskManager.deleteAllSubtask();
+        System.out.println("Выводим все эпики после удаления, статусы эпиков NEW");
+        System.out.println(taskManager.getAllEpic());
+        System.out.println("Выводим все подзадачи, должна быть пустая мапа");
+        System.out.println(taskManager.getAllSubtask());
+        System.out.println("##############################################################");
+    }
+
+    private static void checkDeleteAllEpic(TaskManager taskManager){
+        System.out.println("#### Проверяем удаление всех эпиков ####");
+        System.out.println("Выводим все эпики до удаления");
+        System.out.println(taskManager.getAllEpic());
+        System.out.println("Выводим все подзадачи");
+        System.out.println(taskManager.getAllSubtask());
+        taskManager.deleteAllEpic();
+        System.out.println("Выводим все эпики после удаления, должна быть пустая мапа");
+        System.out.println(taskManager.getAllEpic());
+        System.out.println("Выводим все подзадачи, должна быть пустая мапа");
+        System.out.println(taskManager.getAllSubtask());
+        System.out.println("##############################################################");
     }
 
     private static void checkEpicDelete(TaskManager taskManager, Epic epic2) {
