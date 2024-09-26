@@ -20,21 +20,19 @@ public class TaskManager {
     }
 
     //Получение всех задач
-    //###################################################################
-    public Collection<Task> getAllTask() {
-        return taskStorage.values();
+    public List<Task> getAllTask() {
+        return new ArrayList<>(taskStorage.values());
     }
 
-    public Collection<Subtask> getAllSubtask() {
-        return subtaskStorage.values();
+    public List<Subtask> getAllSubtask() {
+        return new ArrayList<>(subtaskStorage.values());
     }
 
-    public Collection<Epic> getAllEpic() {
-        return epicStorage.values();
+    public List<Epic> getAllEpic() {
+        return new ArrayList<>(epicStorage.values());
     }
 
     // Очистка всех задач
-    //###################################################################
     public void deleteAllTasks() {
         taskStorage.clear();
     }
@@ -55,7 +53,6 @@ public class TaskManager {
     }
 
     //Получение задачи по идентификатору
-    //###################################################################
     public Task getTaskById(Long taskId) {
         return taskStorage.get(taskId);
     }
@@ -69,7 +66,6 @@ public class TaskManager {
     }
 
     //Создание задачи
-    //###################################################################
     public void createTask(Task task) {
         task.setId(nextId++);
         taskStorage.put(task.getId(), task);
@@ -88,7 +84,6 @@ public class TaskManager {
     }
 
     //Обновление данных по задаче
-    //###################################################################
 
     public void updateTask(Task task) {
         taskStorage.put(task.getId(), task);
@@ -105,7 +100,6 @@ public class TaskManager {
     }
 
     //Удаление задачи по идентификатору
-    //###################################################################
 
     public void deleteTaskById(Long taskId) {
         taskStorage.remove(taskId);
@@ -128,7 +122,6 @@ public class TaskManager {
     }
 
     //Получение элементов конкретной коллекции
-    //###################################################################
 
     public List<Subtask> getSubtasksByEpicId(Long epicId) {
         Epic epic = epicStorage.get(epicId);
