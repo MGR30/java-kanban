@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 public class Subtask extends Task {
     private Long epicId;
 
@@ -12,7 +14,9 @@ public class Subtask extends Task {
     }
 
     public void setEpicId(Long epicId) {
-        this.epicId = epicId;
+        if (!Objects.equals(epicId, this.getId())) {
+            this.epicId = epicId;
+        }
     }
 
     @Override
