@@ -162,6 +162,10 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
+    public void removeTaskFromHistory(Long id) {
+        historyManager.remove(id);
+    }
+
     private void updateEpicStatus(Epic epic) {
         int countNew = 0;
         int countDone = 0;
