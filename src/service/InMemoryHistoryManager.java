@@ -1,24 +1,19 @@
 package service;
 
 import model.Task;
-import util.TaskNode;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final ModifiedLinkedList viewHistory;
-
-    public Map<Long, TaskNode> getTaskNodeMap() {
+    public Map<Long, Node> getTaskNodeMap() {
         return taskNodeMap;
     }
 
-    private final Map<Long, TaskNode> taskNodeMap;
+    private final Map<Long, Node> taskNodeMap;
+    private Node firstNodeInMemory;
+    private Node lastNodeInMemory;
 
     public InMemoryHistoryManager() {
-        viewHistory = new ModifiedLinkedList();
         taskNodeMap = new HashMap<>();
     }
 
@@ -28,13 +23,13 @@ public class InMemoryHistoryManager implements HistoryManager {
             if (taskNodeMap.containsKey(task.getId())) {
                 removeNode(task.getId());
             }
-            taskNodeMap.put(task.getId(), viewHistory.linkLast(task));
+            taskNodeMap.put(task.getId(), linkLast(task));
         }
     }
 
     @Override
     public List<Task> getHistory() {
-        return viewHistory.getTasks();
+        return getTasks();
     }
 
     @Override
@@ -43,13 +38,13 @@ public class InMemoryHistoryManager implements HistoryManager {
         taskNodeMap.remove(id);
     }
 
-    public void removeNode(Long id) {
-        TaskNode node = taskNodeMap.get(id);
+    private void removeNode(Long id) {
+        Node node = taskNodeMap.get(id);
         if (node != null) {
-            TaskNode prevNode = node.getPrev();
-            TaskNode nextNode = node.getNext();
-            if (viewHistory.first != null && viewHistory.first.equals(node)) {
-                viewHistory.first = nextNode;
+            Node prevNode = node.getPrev();
+            Node nextNode = node.getNext();
+            if (firstNodeInMemory != null && firstNodeInMemory.equals(node)) {
+                firstNodeInMemory = nextNode;
             }
 
             if (prevNode != null) {
@@ -61,38 +56,83 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
     }
 
-    public static class ModifiedLinkedList {
-        TaskNode first;
-        TaskNode last;
 
-        public TaskNode linkLast(Task task) {
-            final TaskNode l = last;
-            final TaskNode newNode = new TaskNode(l, task, null);
-            last = newNode;
-            if (first == null || l == null) {
-                first = newNode;
-            } else {
-                l.setNext(newNode);
-            }
-
-            return newNode;
+    private Node linkLast(Task task) {
+        final Node l = lastNodeInMemory;
+        final Node newNode = new Node(l, task, null);
+        lastNodeInMemory = newNode;
+        if (firstNodeInMemory == null || l == null) {
+            firstNodeInMemory = newNode;
+        } else {
+            l.setNext(newNode);
         }
 
-        public ArrayList<Task> getTasks() {
-            ArrayList<Task> tasks = new ArrayList<>();
-            TaskNode node = first;
-            while (true) {
-                if (node == null) {
-                    break;
-                }
-                if (node.getNext() == null) {
-                    tasks.add(node.getTask());
-                    break;
-                }
-                tasks.add(node.getTask());
-                node = node.getNext();
+        return newNode;
+    }
+
+    private ArrayList<Task> getTasks() {
+        ArrayList<Task> tasks = new ArrayList<>();
+        Node node = firstNodeInMemory;
+        while (true) {
+            if (node == null) {
+                break;
             }
-            return tasks;
+            if (node.getNext() == null) {
+                tasks.add(node.getTask());
+                break;
+            }
+            tasks.add(node.getTask());
+            node = node.getNext();
+        }
+        return tasks;
+    }
+
+    public static class Node {
+        private Task task;
+        private Node next;
+        private Node prev;
+
+        public Node(Node prev, Task task, Node next) {
+            this.task = task;
+            this.next = next;
+            this.prev = prev;
+        }
+
+        public Task getTask() {
+            return task;
+        }
+
+        public void setTask(Task task) {
+            this.task = task;
+        }
+
+        public Node getNext() {
+            return next;
+        }
+
+        public void setNext(Node next) {
+            this.next = next;
+        }
+
+        public Node getPrev() {
+            return prev;
+        }
+
+        public void setPrev(Node prev) {
+            this.prev = prev;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Node node = (Node) o;
+            return Objects.equals(task, node.task) && Objects.equals(next, node.next) && Objects.equals(prev, node.prev);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(task, next, prev);
         }
     }
 }
