@@ -1,4 +1,4 @@
-package test.model;
+package model;
 
 import model.Epic;
 import model.TaskStatus;
@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class EpicTest {
 
     @Test
-    public void EpicWithSameIdsAreSame() {
+    public void epicWithSameIdsAreSame() {
         Epic epic = new Epic("name", "description", TaskStatus.NEW);
         Epic otherEpic = new Epic("name", "description", TaskStatus.NEW);
         epic.setId(1L);

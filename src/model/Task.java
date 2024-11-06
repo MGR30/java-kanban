@@ -19,7 +19,9 @@ public class Task {
     }
 
     public void setId(Long id) {
-        this.id = id;
+        if (this.id == null) {
+            this.id = id;
+        }
     }
 
     public String getName() {
