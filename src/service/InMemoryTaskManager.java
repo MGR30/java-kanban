@@ -166,6 +166,18 @@ public class InMemoryTaskManager implements TaskManager {
         historyManager.remove(id);
     }
 
+    public void saveTaskToStorage(Task task) {
+        taskStorage.put(task.getId(), task);
+    }
+
+    public void saveSubtaskToStorage(Subtask subtask) {
+        subtaskStorage.put(subtask.getId(), subtask);
+    }
+
+    public void saveEpicToStorage(Epic epic) {
+        epicStorage.put(epic.getId(), epic);
+    }
+
     private void updateEpicStatus(Epic epic) {
         int countNew = 0;
         int countDone = 0;

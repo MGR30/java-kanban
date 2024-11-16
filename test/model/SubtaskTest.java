@@ -11,8 +11,8 @@ class SubtaskTest {
 
     @Test
     public void subtaskWithSameIdsAreSame() {
-        Subtask subtask = new Subtask("name", "description", TaskStatus.NEW);
-        Subtask otherSubtask = new Subtask("name", "description", TaskStatus.NEW);
+        Subtask subtask = new Subtask("name", "description", TaskStatus.NEW, TaskType.SUBTASK);
+        Subtask otherSubtask = new Subtask("name", "description", TaskStatus.NEW, TaskType.SUBTASK);
         subtask.setId(1L);
         otherSubtask.setId(1L);
 
@@ -21,7 +21,7 @@ class SubtaskTest {
 
     @Test
     public void thisSubtaskIdNotSettingInThisEpicId() {
-        Subtask subtask = new Subtask("name", "description", TaskStatus.NEW);
+        Subtask subtask = new Subtask("name", "description", TaskStatus.NEW, TaskType.SUBTASK);
         subtask.setId(1L);
         subtask.setEpicId(subtask.getId());
 

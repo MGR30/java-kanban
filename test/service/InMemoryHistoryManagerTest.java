@@ -2,6 +2,7 @@ package service;
 
 import model.Task;
 import model.TaskStatus;
+import model.TaskType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,8 @@ class InMemoryHistoryManagerTest {
     @BeforeEach
     public void setUp() {
         historyManager = new InMemoryHistoryManager();
-        newTask = new Task("name", "description", TaskStatus.NEW);
-        newTask2 = new Task("name", "description", TaskStatus.NEW);
+        newTask = new Task("name", "description", TaskStatus.NEW, TaskType.TASK);
+        newTask2 = new Task("name", "description", TaskStatus.NEW, TaskType.TASK);
         newTask2.setId(1L);
     }
 

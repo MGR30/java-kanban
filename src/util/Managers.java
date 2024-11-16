@@ -1,9 +1,8 @@
 package util;
 
-import service.HistoryManager;
-import service.InMemoryHistoryManager;
-import service.InMemoryTaskManager;
-import service.TaskManager;
+import service.*;
+
+import java.io.File;
 
 public class Managers {
 
@@ -13,5 +12,10 @@ public class Managers {
 
     public static HistoryManager getDefaultHistory() {
         return new InMemoryHistoryManager();
+    }
+
+    public static TaskManager getFileBackendTaskManager() {
+        File file = new File("file.csv");
+        return new FileBackedTaskManager(getDefaultHistory(), file);
     }
 }

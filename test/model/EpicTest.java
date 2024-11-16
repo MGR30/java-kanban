@@ -10,8 +10,8 @@ class EpicTest {
 
     @Test
     public void epicWithSameIdsAreSame() {
-        Epic epic = new Epic("name", "description", TaskStatus.NEW);
-        Epic otherEpic = new Epic("name", "description", TaskStatus.NEW);
+        Epic epic = new Epic("name", "description", TaskStatus.NEW, TaskType.EPIC);
+        Epic otherEpic = new Epic("name", "description", TaskStatus.NEW, TaskType.EPIC);
         epic.setId(1L);
         otherEpic.setId(1L);
 

@@ -7,11 +7,13 @@ public class Task {
     private String name;
     private String description;
     private TaskStatus status;
+    private TaskType type;
 
-    public Task(String name, String description, TaskStatus status) {
+    public Task(String name, String description, TaskStatus status, TaskType type) {
         this.name = name;
         this.description = description;
         this.status = status;
+        this.type = type;
     }
 
     public Long getId() {
@@ -61,13 +63,16 @@ public class Task {
         return Objects.hash(name, description, status);
     }
 
+    public TaskType getType() {
+        return type;
+    }
+
+    public void setType(TaskType type) {
+        this.type = type;
+    }
+
     @Override
     public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", status=" + status +
-                '}';
+        return id + "," + name + "," + description + "," + status + "," + type;
     }
 }
