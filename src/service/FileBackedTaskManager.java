@@ -1,6 +1,7 @@
 package service;
 
 import model.*;
+import util.Managers;
 
 import java.io.*;
 import java.util.List;
@@ -12,7 +13,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public FileBackedTaskManager(HistoryManager historyManager, File file) {
         super(historyManager);
         this.file = file;
-        loadFromFile(file);
     }
 
     @Override
@@ -93,11 +93,25 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         save();
     }
 
-    public File getFile() {
-        return file;
+    public static FileBackedTaskManager loadFromFile(File file) {
+        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(Managers.getDefaultHistory(), file);
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            while (reader.ready()) {
+                String loadingString = reader.readLine();
+                if (loadingString.startsWith("id")) {
+                    continue;
+                }
+                fileBackedTaskManager.fromString(loadingString);
+            }
+            fileBackedTaskManager.addLoadingSubtaskToEpic();
+        } catch (IOException e) {
+            System.out.println("Ошибка при чтении файла");
+        }
+
+        return fileBackedTaskManager;
     }
 
-    public void save() {
+    private void save() {
         List<Task> allTask = super.getAllTask();
         List<Epic> allEpic = super.getAllEpic();
         List<Subtask> allSubtask = super.getAllSubtask();
@@ -120,37 +134,25 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    private void loadFromFile(File file) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            while (reader.ready()) {
-                String loadingString = reader.readLine();
-                if (loadingString.startsWith("id")) {
-                    continue;
-                }
-                String[] splitsString = loadingString.split(",");
-                switch (splitsString[4]) {
-                    case "SUBTASK":
-                        Subtask subtask = new Subtask(splitsString[1], splitsString[2], TaskStatus.valueOf(splitsString[3]), TaskType.valueOf(splitsString[4]));
-                        subtask.setId(Long.parseLong(splitsString[0]));
-                        subtask.setEpicId(Long.parseLong(splitsString[5]));
-                        super.saveSubtaskToStorage(subtask);
-                        break;
-                    case "EPIC":
-                        Epic epic = new Epic(splitsString[1], splitsString[2], TaskStatus.valueOf(splitsString[3]), TaskType.valueOf(splitsString[4]));
-                        epic.setId(Long.parseLong(splitsString[0]));
-                        super.saveEpicToStorage(epic);
-                        break;
-                    default:
-                        Task task = new Task(splitsString[1], splitsString[2], TaskStatus.valueOf(splitsString[3]), TaskType.valueOf(splitsString[4]));
-                        task.setId(Long.parseLong(splitsString[0]));
-                        super.saveTaskToStorage(task);
-                        break;
-                }
-            }
-            addLoadingSubtaskToEpic();
-            System.out.println("Загрузка данных произошла успешно");
-        } catch (IOException e) {
-            System.out.println("Ошибка при чтении файла");
+    private void fromString(String value) {
+        String[] splitsString = value.split(",");
+        switch (splitsString[4]) {
+            case "SUBTASK":
+                Subtask subtask = new Subtask(splitsString[1], splitsString[2], TaskStatus.valueOf(splitsString[3]), TaskType.valueOf(splitsString[4]));
+                subtask.setId(Long.parseLong(splitsString[0]));
+                subtask.setEpicId(Long.parseLong(splitsString[5]));
+                super.saveSubtaskToStorage(subtask);
+                break;
+            case "EPIC":
+                Epic epic = new Epic(splitsString[1], splitsString[2], TaskStatus.valueOf(splitsString[3]), TaskType.valueOf(splitsString[4]));
+                epic.setId(Long.parseLong(splitsString[0]));
+                super.saveEpicToStorage(epic);
+                break;
+            default:
+                Task task = new Task(splitsString[1], splitsString[2], TaskStatus.valueOf(splitsString[3]), TaskType.valueOf(splitsString[4]));
+                task.setId(Long.parseLong(splitsString[0]));
+                super.saveTaskToStorage(task);
+                break;
         }
     }
 

@@ -16,6 +16,6 @@ public class Managers {
 
     public static TaskManager getFileBackendTaskManager() {
         File file = new File("file.csv");
-        return new FileBackedTaskManager(getDefaultHistory(), file);
+        return FileBackedTaskManager.loadFromFile(file);
     }
 }
