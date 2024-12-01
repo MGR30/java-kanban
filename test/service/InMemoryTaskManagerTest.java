@@ -5,37 +5,27 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static model.TaskStatus.NEW;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
-class InMemoryTaskManagerTest {
-    private static InMemoryTaskManager taskManager;
-    private Task task;
-    private Epic epic;
-    private Subtask subtask;
+import static model.TaskStatus.*;
+
+class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
 
     @BeforeEach
     void setUpTaskManager() {
         taskManager = new InMemoryTaskManager(new InMemoryHistoryManager());
-        task = new Task("name", "description", NEW, TaskType.TASK);
-        taskManager.createTask(task);
-        epic = new Epic("epicName", "epicDescription", NEW, TaskType.EPIC);
-        taskManager.createEpic(epic);
-        subtask = new Subtask("subtaskName", "subtaskDescription", NEW, TaskType.SUBTASK);
-        subtask.setEpicId(epic.getId());
-        taskManager.createSubtask(subtask);
+        super.setUp(taskManager);
     }
 
-    @Test
     void getAllTask() {
         Assertions.assertEquals(task, taskManager.getAllTask().getFirst());
     }
 
-    @Test
     void getAllSubtask() {
         Assertions.assertEquals(subtask, taskManager.getAllSubtask().getFirst());
     }
 
-    @Test
     void getAllEpic() {
         Assertions.assertEquals(epic, taskManager.getAllEpic().getFirst());
     }
@@ -77,18 +67,18 @@ class InMemoryTaskManagerTest {
 
     @Test
     void createTask() {
-        Task expectedTask = new Task("name", "description", NEW, TaskType.TASK);
+        Task expectedTask = new Task("name", "description", NEW, TaskType.TASK, Duration.ZERO, LocalDateTime.now());
         expectedTask.setId(task.getId());
         Assertions.assertEquals(expectedTask, task);
     }
 
     @Test
     void createSubtask() {
-        Subtask expectedSubtask = new Subtask("subtaskName", "subtaskDescription", NEW, TaskType.TASK);
+        Subtask expectedSubtask = new Subtask("subtaskName", "subtaskDescription", NEW, TaskType.TASK, Duration.ZERO, LocalDateTime.now().plusHours(1));
 
         Assertions.assertEquals(NEW, epic.getStatus());
 
-        Subtask subtask1 = new Subtask("subtaskName1", "subtaskName1", TaskStatus.IN_PROGRESS, TaskType.SUBTASK);
+        Subtask subtask1 = new Subtask("subtaskName1", "subtaskName1", TaskStatus.IN_PROGRESS, TaskType.SUBTASK, Duration.ZERO, LocalDateTime.now().plusHours(2));
         subtask1.setEpicId(epic.getId());
         taskManager.createSubtask(subtask1);
         epic.getSubtasks().add(subtask1);
@@ -103,7 +93,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void createEpic() {
-        Epic expectedEpic = new Epic("epicName", "epicDescription", NEW, TaskType.EPIC);
+        Epic expectedEpic = new Epic("epicName", "epicDescription", NEW, TaskType.EPIC, Duration.ZERO, LocalDateTime.now());
         expectedEpic.getSubtasks().add(subtask);
 
         taskManager.createEpic(expectedEpic);
@@ -147,7 +137,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void deleteTaskById() {
-        Task expectedDeletedTask = new Task("expTaskName", "expTaskDescription", NEW, TaskType.TASK);
+        Task expectedDeletedTask = new Task("expTaskName", "expTaskDescription", NEW, TaskType.TASK, Duration.ZERO, LocalDateTime.now().plusHours(3));
 
         taskManager.createTask(expectedDeletedTask);
         Assertions.assertEquals(expectedDeletedTask, taskManager.getTaskById(expectedDeletedTask.getId()));
@@ -166,7 +156,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void deleteEpicById() {
-        Subtask subtaskForDelete = new Subtask("subName", "subDesc", NEW, TaskType.SUBTASK);
+        Subtask subtaskForDelete = new Subtask("subName", "subDesc", NEW, TaskType.SUBTASK, Duration.ZERO, LocalDateTime.now().plusHours(2));
         subtaskForDelete.setEpicId(epic.getId());
         epic.getSubtasks().add(subtaskForDelete);
         taskManager.createSubtask(subtaskForDelete);
@@ -193,11 +183,47 @@ class InMemoryTaskManagerTest {
 
     @Test
     void notMutableTaskOnCreateTest() {
-        Task task = new Task("name", "description", NEW, TaskType.TASK);
+        Task task = new Task("name", "description", NEW, TaskType.TASK, Duration.ZERO, LocalDateTime.now());
         taskManager.createTask(task);
 
         Assertions.assertEquals(task.getName(), taskManager.getTaskById(1L).getName());
         Assertions.assertEquals(task.getDescription(), taskManager.getTaskById(1L).getDescription());
         Assertions.assertEquals(task.getStatus(), taskManager.getTaskById(1L).getStatus());
+    }
+
+    @Override
+    @Test
+    void epicStatusUpdateTest_AllSubtasksNew() {
+        super.epicStatusUpdateTest_AllSubtasksNew();
+    }
+
+    @Override
+    @Test
+    void epicStatusUpdateTest_AllSubtasksDone() {
+        super.epicStatusUpdateTest_AllSubtasksDone();
+    }
+
+    @Override
+    @Test
+    void epicStatusUpdateTest_SubtasksDoneAndNew() {
+        super.epicStatusUpdateTest_SubtasksDoneAndNew();
+    }
+
+    @Override
+    @Test
+    void epicStatusUpdateTest_SubtasksInProgress() {
+        super.epicStatusUpdateTest_SubtasksInProgress();
+    }
+
+    @Override
+    @Test
+    void checkNotIntersectionTimeCorrect_TaskWithIntersectionTime() {
+        super.checkNotIntersectionTimeCorrect_TaskWithIntersectionTime();
+    }
+
+    @Override
+    @Test
+    void checkNotIntersectionTimeCorrect_TaskWithoutIntersectionTime() {
+        super.checkNotIntersectionTimeCorrect_TaskWithoutIntersectionTime();
     }
 }

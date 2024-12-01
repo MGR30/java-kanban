@@ -8,14 +8,12 @@ import util.Managers;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import static model.TaskStatus.NEW;
 
-class FileBackedTaskManagerTest {
-    private FileBackedTaskManager taskManager;
-    private Task task;
-    private Epic epic;
-    private Subtask subtask;
+class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     private File tmpFile;
 
     @BeforeEach
@@ -23,17 +21,10 @@ class FileBackedTaskManagerTest {
         try {
             tmpFile = File.createTempFile("tmpFile", ".csv");
             taskManager = new FileBackedTaskManager(Managers.getDefaultHistory(), tmpFile);
+            super.setUp(taskManager);
         } catch (IOException e) {
             System.out.println("Ошибка при создании файла");
         }
-        task = new Task("name", "description", NEW, TaskType.TASK);
-        taskManager.createTask(task);
-        epic = new Epic("epicName", "epicDescription", NEW, TaskType.EPIC);
-        taskManager.createEpic(epic);
-        subtask = new Subtask("subtaskName", "subtaskDescription", NEW, TaskType.SUBTASK);
-        subtask.setEpicId(epic.getId());
-        taskManager.createSubtask(subtask);
-
     }
 
     @Test
@@ -41,7 +32,6 @@ class FileBackedTaskManagerTest {
         FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(tmpFile);
         Task expectedTask = fileBackedTaskManager.getTaskById(task.getId());
         expectedTask.setId(task.getId());
-
         Assertions.assertEquals(expectedTask, task);
     }
 
@@ -76,7 +66,7 @@ class FileBackedTaskManagerTest {
 
     @Test
     void deleteEpicById() {
-        Subtask subtaskForDelete = new Subtask("subName", "subDesc", NEW, TaskType.SUBTASK);
+        Subtask subtaskForDelete = new Subtask("subName", "subDesc", NEW, TaskType.SUBTASK, Duration.ZERO, LocalDateTime.now().plusHours(2));
         subtaskForDelete.setEpicId(epic.getId());
         epic.getSubtasks().add(subtaskForDelete);
         taskManager.createSubtask(subtaskForDelete);
@@ -99,7 +89,7 @@ class FileBackedTaskManagerTest {
 
     @Test
     void deleteTaskById() {
-        Task expectedDeletedTask = new Task("expTaskName", "expTaskDescription", NEW, TaskType.TASK);
+        Task expectedDeletedTask = new Task("expTaskName", "expTaskDescription", NEW, TaskType.TASK, Duration.ZERO, LocalDateTime.now().plusHours(2));
 
         taskManager.createTask(expectedDeletedTask);
         Assertions.assertEquals(expectedDeletedTask, taskManager.getTaskById(expectedDeletedTask.getId()));
@@ -166,9 +156,45 @@ class FileBackedTaskManagerTest {
 
     @Test
     void save() {
-        Task expectedTaskInFile = new Task("expectedTask", "expected description", NEW, TaskType.TASK);
+        Task expectedTaskInFile = new Task("expectedTask", "expected description", NEW, TaskType.TASK, Duration.ZERO, LocalDateTime.now().plusHours(3));
         taskManager.createTask(expectedTaskInFile);
         FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(tmpFile);
         Assertions.assertEquals(expectedTaskInFile, fileBackedTaskManager.getTaskById(expectedTaskInFile.getId()));
+    }
+
+    @Override
+    @Test
+    void epicStatusUpdateTest_AllSubtasksNew() {
+        super.epicStatusUpdateTest_AllSubtasksNew();
+    }
+
+    @Override
+    @Test
+    void epicStatusUpdateTest_AllSubtasksDone() {
+        super.epicStatusUpdateTest_AllSubtasksDone();
+    }
+
+    @Override
+    @Test
+    void epicStatusUpdateTest_SubtasksDoneAndNew() {
+        super.epicStatusUpdateTest_SubtasksDoneAndNew();
+    }
+
+    @Override
+    @Test
+    void epicStatusUpdateTest_SubtasksInProgress() {
+        super.epicStatusUpdateTest_SubtasksInProgress();
+    }
+
+    @Override
+    @Test
+    void checkNotIntersectionTimeCorrect_TaskWithIntersectionTime() {
+        super.checkNotIntersectionTimeCorrect_TaskWithIntersectionTime();
+    }
+
+    @Override
+    @Test
+    void checkNotIntersectionTimeCorrect_TaskWithoutIntersectionTime() {
+        super.checkNotIntersectionTimeCorrect_TaskWithoutIntersectionTime();
     }
 }

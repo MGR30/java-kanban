@@ -1,19 +1,30 @@
 package model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-public class Task {
+public class Task implements Comparable<Task> {
     private Long id;
     private String name;
     private String description;
     private TaskStatus status;
     private TaskType type;
+    private Duration duration;
+    private LocalDateTime startTime;
 
-    public Task(String name, String description, TaskStatus status, TaskType type) {
+    public Task(String name, String description, TaskStatus status, TaskType type, Duration duration, LocalDateTime startTime) {
         this.name = name;
         this.description = description;
         this.status = status;
         this.type = type;
+        this.duration = duration;
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return startTime.plus(duration);
     }
 
     public Long getId() {
@@ -50,6 +61,23 @@ public class Task {
         this.status = status;
     }
 
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -73,6 +101,17 @@ public class Task {
 
     @Override
     public String toString() {
-        return id + "," + name + "," + description + "," + status + "," + type;
+        return id + ","
+                + name + ","
+                + description + ","
+                + status + ","
+                + type + ","
+                + duration.toMinutes() + ","
+                + startTime.format(DateTimeFormatter.ISO_DATE_TIME);
+    }
+
+    @Override
+    public int compareTo(Task o) {
+        return this.startTime.compareTo(o.startTime);
     }
 }
