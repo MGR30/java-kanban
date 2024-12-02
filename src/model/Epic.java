@@ -32,6 +32,7 @@ public class Epic extends Task {
 
         setDuration(Duration.ZERO);
         subtasks.forEach(subtask -> setDuration(getDuration().plus(subtask.getDuration())));
+        endTime = getStartTime().plus(getDuration());
     }
 
     @Override
