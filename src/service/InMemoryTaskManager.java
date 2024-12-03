@@ -11,6 +11,7 @@ public class InMemoryTaskManager implements TaskManager {
     private final Map<Long, Task> taskStorage;
     private final Map<Long, Subtask> subtaskStorage;
     private final Map<Long, Epic> epicStorage;
+    private final Set<Task> sortedTasksStorage;
     private final HistoryManager historyManager;
     private long nextId = 1L;
 
@@ -18,6 +19,7 @@ public class InMemoryTaskManager implements TaskManager {
         taskStorage = new HashMap<>();
         subtaskStorage = new HashMap<>();
         epicStorage = new HashMap<>();
+        sortedTasksStorage = new TreeSet<>();
         this.historyManager = historyManager;
     }
 
@@ -46,11 +48,12 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteAllSubtask() {
         Collection<Subtask> values = subtaskStorage.values();
-        for (Subtask subtask : values) {
-            Epic epic = epicStorage.get(subtask.getEpicId());
-            epic.setStatus(TaskStatus.NEW);
-            epic.getSubtasks().clear();
-        }
+        values.forEach(subtask -> {
+                    Epic epic = epicStorage.get(subtask.getEpicId());
+                    epic.setStatus(TaskStatus.NEW);
+                    epic.getSubtasks().clear();
+                    epic.updateTimesParameters();
+                });
         subtaskStorage.clear();
     }
 
@@ -87,16 +90,36 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createTask(Task task) {
         task.setId(nextId++);
-        taskStorage.put(task.getId(), task);
+
+        if (isNotIntersectionTime(task) || taskStorage.isEmpty()) {
+            taskStorage.put(task.getId(), task);
+        } else {
+            System.out.println("Задача пересекается по времени!");
+            return;
+        }
+
+        if (Objects.nonNull(task.getStartTime())) {
+            sortedTasksStorage.add(task);
+        }
     }
 
     @Override
     public void createSubtask(Subtask newSubtask) {
         newSubtask.setId(nextId++);
         Epic epic = epicStorage.get(newSubtask.getEpicId());
-        subtaskStorage.put(newSubtask.getId(), newSubtask);
-        epic.getSubtasks().add(newSubtask);
-        updateEpicStatus(epic);
+
+        if (isNotIntersectionTime(newSubtask) || taskStorage.isEmpty()) {
+            subtaskStorage.put(newSubtask.getId(), newSubtask);
+            epic.getSubtasks().add(newSubtask);
+            updateEpicStatus(epic);
+            epic.updateTimesParameters();
+        } else {
+            System.out.println("Задача пересекается по времени!");
+        }
+
+        if (Objects.nonNull(newSubtask.getStartTime())) {
+            sortedTasksStorage.add(newSubtask);
+        }
     }
 
     @Override
@@ -109,14 +132,24 @@ public class InMemoryTaskManager implements TaskManager {
     //Обновление данных по задаче
     @Override
     public void updateTask(Task task) {
-        taskStorage.put(task.getId(), task);
+        if (isNotIntersectionTime(task) || taskStorage.containsKey(task.getId())) {
+            taskStorage.put(task.getId(), task);
+        } else {
+            System.out.println("Задача пересекается по времени!");
+        }
     }
 
     @Override
     public void updateSubtask(Subtask updatableSubtask) {
-        subtaskStorage.put(updatableSubtask.getId(), updatableSubtask);
         Epic epic = epicStorage.get(updatableSubtask.getEpicId());
-        updateEpicStatus(epic);
+        if (isNotIntersectionTime(updatableSubtask) || subtaskStorage.containsKey(updatableSubtask.getId())) {
+            subtaskStorage.put(updatableSubtask.getId(), updatableSubtask);
+            epic.getSubtasks().add(updatableSubtask);
+            updateEpicStatus(epic);
+            epic.updateTimesParameters();
+        } else {
+            System.out.println("Задача пересекается по времени!");
+        }
     }
 
     @Override
@@ -136,16 +169,14 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = epicStorage.get(subtask.getEpicId());
         epic.getSubtasks().remove(subtask);
         updateEpicStatus(epic);
+        epic.updateTimesParameters();
         subtaskStorage.remove(subtaskId);
     }
 
     @Override
     public void deleteEpicById(Long epicId) {
         Epic epic = epicStorage.get(epicId);
-        List<Subtask> subtasksIds = epic.getSubtasks();
-        for (Subtask subtask : subtasksIds) {
-            subtaskStorage.remove(subtask.getId());
-        }
+        epic.getSubtasks().forEach(subtask -> subtaskStorage.remove(subtask.getId()));
         epicStorage.remove(epicId);
     }
 
@@ -176,6 +207,18 @@ public class InMemoryTaskManager implements TaskManager {
 
     public void saveEpicToStorage(Epic epic) {
         epicStorage.put(epic.getId(), epic);
+    }
+
+    @Override
+    public List<Task> getPrioritizedTasks() {
+        return sortedTasksStorage.stream().toList();
+    }
+
+    private boolean isNotIntersectionTime(Task task) {
+        long count = getPrioritizedTasks().stream()
+                .filter(task1 -> task1.getEndTime().isAfter(task.getStartTime()))
+                .count();
+        return count == 0;
     }
 
     private void updateEpicStatus(Epic epic) {

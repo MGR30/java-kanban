@@ -8,17 +8,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.InMemoryHistoryManager;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 class InMemoryHistoryManagerTest {
     private static InMemoryHistoryManager historyManager;
     private static Task newTask;
     private static Task newTask2;
+    private static Task newTask3;
 
     @BeforeEach
     public void setUp() {
         historyManager = new InMemoryHistoryManager();
-        newTask = new Task("name", "description", TaskStatus.NEW, TaskType.TASK);
-        newTask2 = new Task("name", "description", TaskStatus.NEW, TaskType.TASK);
-        newTask2.setId(1L);
+        newTask = new Task("name", "description", TaskStatus.NEW, TaskType.TASK, Duration.ofMinutes(15), LocalDateTime.now());
+        newTask2 = new Task("name2", "description", TaskStatus.NEW, TaskType.TASK, Duration.ofMinutes(15), LocalDateTime.now().plusMinutes(20));
+        newTask3 = new Task("name3", "description", TaskStatus.NEW, TaskType.TASK, Duration.ofMinutes(15), LocalDateTime.now().plusMinutes(40));
+        newTask.setId(1L);
+        newTask2.setId(2L);
+        newTask3.setId(3L);
     }
 
     @Test
@@ -55,4 +62,42 @@ class InMemoryHistoryManagerTest {
         historyManager.remove(newTask.getId());
         Assertions.assertEquals(0, historyManager.getTaskNodeMap().size());
     }
+
+    @Test
+    void removeRecordFromHeadOfHistory() {
+        historyManager.add(newTask);
+        historyManager.add(newTask2);
+        historyManager.add(newTask3);
+
+        historyManager.remove(newTask.getId());
+        System.out.println(historyManager.getHistory());
+        Assertions.assertTrue(historyManager.getHistory().contains(newTask2));
+        Assertions.assertTrue(historyManager.getHistory().contains(newTask3));
+        Assertions.assertFalse(historyManager.getHistory().contains(newTask));
+    }
+    @Test
+    void removeRecordFromMidlOfHistory() {
+        historyManager.add(newTask);
+        historyManager.add(newTask2);
+        historyManager.add(newTask3);
+
+        historyManager.remove(newTask2.getId());
+        System.out.println(historyManager.getHistory());
+        Assertions.assertTrue(historyManager.getHistory().contains(newTask));
+        Assertions.assertTrue(historyManager.getHistory().contains(newTask3));
+        Assertions.assertFalse(historyManager.getHistory().contains(newTask2));
+    }
+    @Test
+    void removeRecordFromEndOfHistory() {
+        historyManager.add(newTask);
+        historyManager.add(newTask2);
+        historyManager.add(newTask3);
+
+        historyManager.remove(newTask3.getId());
+        System.out.println(historyManager.getHistory());
+        Assertions.assertTrue(historyManager.getHistory().contains(newTask));
+        Assertions.assertTrue(historyManager.getHistory().contains(newTask2));
+        Assertions.assertFalse(historyManager.getHistory().contains(newTask3));
+    }
+
 }
