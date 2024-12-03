@@ -17,7 +17,6 @@ public class Epic extends Task {
     }
 
     public LocalDateTime getEndTime() {
-        endTime = getStartTime().plus(getDuration());
         return endTime;
     }
 
@@ -30,9 +29,12 @@ public class Epic extends Task {
                 .min(Comparator.comparing(Task::getStartTime));
         earlySubtaskOptional.ifPresent(subtask -> this.setStartTime(subtask.getStartTime()));
 
+        Optional<Subtask> olderSubtaskOptional = subtasks.stream()
+                .max(Comparator.comparing(Task::getEndTime));
+        olderSubtaskOptional.ifPresent(subtask -> endTime = subtask.getEndTime());
+
         setDuration(Duration.ZERO);
         subtasks.forEach(subtask -> setDuration(getDuration().plus(subtask.getDuration())));
-        endTime = getStartTime().plus(getDuration());
     }
 
     @Override
