@@ -1,5 +1,6 @@
 package service;
 
+import exceptions.NotFoundException;
 import model.Task;
 
 import java.util.*;
@@ -53,6 +54,8 @@ public class InMemoryHistoryManager implements HistoryManager {
             if (nextNode != null) {
                 nextNode.setPrev(prevNode);
             }
+        } else {
+            throw new NotFoundException("Записи с таким идентификатором не найдено");
         }
     }
 
