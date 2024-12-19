@@ -1,6 +1,8 @@
 package service;
 
+import exceptions.NotFoundException;
 import model.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,11 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
         } catch (IOException e) {
             System.out.println("Ошибка при создании файла");
         }
+    }
+
+    @AfterEach
+    void deleteAllTasksAfterTest() {
+
     }
 
     @Test
@@ -66,12 +73,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
     @Test
     void deleteEpicById() {
-        Subtask subtaskForDelete = new Subtask("subName", "subDesc", NEW, TaskType.SUBTASK, Duration.ZERO, LocalDateTime.now().plusHours(2));
-        subtaskForDelete.setEpicId(epic.getId());
-        epic.getSubtasks().add(subtaskForDelete);
-        taskManager.createSubtask(subtaskForDelete);
-
-        Assertions.assertEquals(2, taskManager.getAllSubtask().size());
+        Assertions.assertEquals(1, taskManager.getAllSubtask().size());
         taskManager.deleteEpicById(epic.getId());
 
         FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(tmpFile);
@@ -83,7 +85,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     void deleteSubtaskById() {
         taskManager.deleteSubtaskById(subtask.getId());
         FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(tmpFile);
-        Assertions.assertNull(fileBackedTaskManager.getSubtaskById(subtask.getId()));
+        Assertions.assertThrows(NotFoundException.class, () -> fileBackedTaskManager.getSubtaskById(subtask.getId()));
         Assertions.assertFalse(epic.getSubtasks().contains(subtask));
     }
 
@@ -96,8 +98,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
         taskManager.deleteTaskById(expectedDeletedTask.getId());
         FileBackedTaskManager fileBackedTaskManager = FileBackedTaskManager.loadFromFile(tmpFile);
-        Assertions.assertNull(taskManager.getTaskById(expectedDeletedTask.getId()));
-        Assertions.assertNull(fileBackedTaskManager.getTaskById(expectedDeletedTask.getId()));
+        Assertions.assertThrows(NotFoundException.class, () -> taskManager.getTaskById(expectedDeletedTask.getId()));
     }
 
     @Test

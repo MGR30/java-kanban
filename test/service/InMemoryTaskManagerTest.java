@@ -1,5 +1,6 @@
 package service;
 
+import exceptions.NotFoundException;
 import model.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import static model.TaskStatus.*;
+import static model.TaskStatus.NEW;
 
 class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
 
@@ -143,14 +144,14 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         Assertions.assertEquals(expectedDeletedTask, taskManager.getTaskById(expectedDeletedTask.getId()));
 
         taskManager.deleteTaskById(expectedDeletedTask.getId());
-        Assertions.assertNull(taskManager.getTaskById(expectedDeletedTask.getId()));
+        Assertions.assertThrows(NotFoundException.class, () -> taskManager.getTaskById(expectedDeletedTask.getId()));
     }
 
     @Test
     void deleteSubtaskById() {
         taskManager.deleteSubtaskById(subtask.getId());
 
-        Assertions.assertNull(taskManager.getSubtaskById(subtask.getId()));
+        Assertions.assertThrows(NotFoundException.class, () -> taskManager.getSubtaskById(subtask.getId()));
         Assertions.assertFalse(epic.getSubtasks().contains(subtask));
     }
 
