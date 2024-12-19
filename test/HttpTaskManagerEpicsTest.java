@@ -21,11 +21,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static util.GsonConfigurator.getGson;
 
 public class HttpTaskManagerEpicsTest {
     TaskManager manager = Managers.getDefault();
     HttpTaskServer taskServer = new HttpTaskServer(manager);
-    Gson gson = HttpTaskServer.getGson();
+    Gson gson = getGson();
 
     public HttpTaskManagerEpicsTest() {
     }

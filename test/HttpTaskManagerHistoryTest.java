@@ -16,10 +16,12 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static util.GsonConfigurator.getGson;
+
 public class HttpTaskManagerHistoryTest {
     TaskManager manager = Managers.getDefault();
     HttpTaskServer taskServer = new HttpTaskServer(manager);
-    Gson gson = HttpTaskServer.getGson();
+    Gson gson = getGson();
 
     @BeforeEach
     public void setUp() throws IOException {
