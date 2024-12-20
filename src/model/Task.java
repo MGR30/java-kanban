@@ -23,6 +23,9 @@ public class Task implements Comparable<Task> {
         this.startTime = startTime;
     }
 
+    public Task() {
+    }
+
     public LocalDateTime getEndTime() {
         return startTime.plus(duration);
     }
@@ -78,6 +81,14 @@ public class Task implements Comparable<Task> {
     }
 
 
+    public TaskType getType() {
+        return type;
+    }
+
+    public void setType(TaskType type) {
+        this.type = type;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -89,14 +100,6 @@ public class Task implements Comparable<Task> {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, status);
-    }
-
-    public TaskType getType() {
-        return type;
-    }
-
-    public void setType(TaskType type) {
-        this.type = type;
     }
 
     @Override
